@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8.0
+    restart: always
+    environment:
+      MYSQL_DATABASE: lernmaterialdb
+      MYSQL_USER: lernuser
+      MYSQL_PASSWORD: lernpass
+      MYSQL_ROOT_PASSWORD: rootpass
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "3306:3306"
+
+  web:
+    build: .
+    command: flask run --host=0.0.0.0
+    volumes:
+      - .:/app
+      - ./uploads:/app/uploads
+    ports:
+      - "5000:5000"
+    environment:
+      FLASK_APP: app.py
+      FLASK_ENV: development
+      DATABASE_URL: mysql+pymysql://lernuser:lernpass@db:3306/lernmaterialdb
+    depends_on:
+      - db
+
+volumes:
+  db_data:

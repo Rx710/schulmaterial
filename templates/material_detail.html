@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+{% extends 'base.html' %}
+{% block content %}
+<div class="row">
+  <div class="col-md-8">
+    <h1>{{ material.Dateiname }}</h1>
+    <p><strong>Dateityp:</strong> {{ material.Dateityp }}</p>
+    <p><strong>Thema:</strong> {{ material.thema.Bezeichnung }}</p>
+    <p><strong>Autor:</strong> {{ material.autor.Vorname }} {{ material.autor.Nachname }}</p>
+    <p><strong>Erstellt am:</strong> {{ material.Erstelldatum.strftime('%d.%m.%Y %H:%M') }}</p>
+    <p><strong>Zuletzt geändert:</strong> {{ material.Änderungsdatum.strftime('%d.%m.%Y %H:%M') }}</p>
+    {% if material.tags %}
+      <p><strong>Tags:</strong>
+        {% for tag in material.tags %}
+          <span class="badge bg-secondary">{{ tag.Bezeichnung }}</span>
+        {% endfor %}
+      </p>
+    {% endif %}
+    <a href="{{ url_for('download_material', material_id=material.MaterialID) }}" class="btn btn-success mb-4">Herunterladen</a>
+
+    <h3>Komentare</h3>
+    {% if kommentare %}
+      <ul class="list-group mb-4">
+        {% for k in kommentare %}
+          <li class="list-group-item">
+            <p><strong>{{ k.autor.Vorname }} {{ k.autor.Nachname }}</strong> <small class="text-muted">({{ k.Erstelldatum.strftime('%d.%m.%Y %H:%M') }})</small></p>
+            <p>{{ k.Kommentartext }}</p>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="text-muted">Bisher keine Kommentare.</p>
+    {% endif %}
+
+    <h4>Neuen Kommentar hinzufügen</h4>
+    <form method="post" action="{{ url_for('add_comment', material_id=material.MaterialID) }}">
+      <div class="mb-3">
+        <label for="autor_id" class="form-label">Autor</label>
+        <select class="form-select" id="autor_id" name="autor_id" required>
+          <option value="" disabled selected>Wähle einen Autor</option>
+          {% for b in benutzer %}
+            <option value="{{ b.BenutzerID }}">{{ b.Vorname }} {{ b.Nachname }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="mb-3">
+        <label for="kommentartext" class="form-label">Kommentartext</label>
+        <textarea class="form-control" id="kommentartext" name="kommentartext" rows="3" required></textarea>
+      </div>
+      <button type="submit" class="btn btn-primary">Kommentieren</button>
+    </form>
+  </div>
+</div>
+{% endblock %}
+</body>
+</html>

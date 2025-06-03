@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+</head>
+<body>
+{% extends 'base.html' %}
+{% block content %}
+  <h1 class="mb-4">Suche nach Lernmaterialien</h1>
+  <div class="mb-3">
+    <input
+      type="text"
+      class="form-control"
+      id="query"
+      name="query"
+      placeholder="Suchbegriff eingeben..."
+      hx-get="{{ url_for('search_materials') }}"
+      hx-target="#results"
+      hx-trigger="keyup changed delay:500ms"
+    />
+  </div>
+  <div id="results">
+    <!-- Hier lädt HTMX die Suchergebnisse -->
+  </div>
+{% endblock %}
+
+</body>
+</html>

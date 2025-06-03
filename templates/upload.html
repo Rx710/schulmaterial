@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+{% extends 'base.html' %}
+{% block content %}
+<h1 class="mb-4">Lernmaterial hochladen</h1>
+<form method="post" enctype="multipart/form-data">
+  <div class="mb-3">
+    <label for="datei" class="form-label">Datei auswählen</label>
+    <input class="form-control" type="file" id="datei" name="datei" required>
+  </div>
+  <div class="mb-3">
+    <label for="autor_id" class="form-label">Autor</label>
+    <select class="form-select" id="autor_id" name="autor_id" required>
+      <option value="" disabled selected>Wähle einen Autor</option>
+      {% for b in benutzer %}
+        <option value="{{ b.BenutzerID }}">{{ b.Vorname }} {{ b.Nachname }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="mb-3">
+    <label for="thema_id" class="form-label">Themengebiet</label>
+    <select class="form-select" id="thema_id" name="thema_id" required>
+      <option value="" disabled selected>Wähle ein Thema</option>
+      {% for t in themen %}
+        <option value="{{ t.ThemaID }}">{{ t.Bezeichnung }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="mb-3">
+    <label for="tags" class="form-label">Tags (kommagetrennt)</label>
+    <input type="text" class="form-control" id="tags" name="tags" placeholder="z.B. Einführung, Grundlagen">
+  </div>
+  <button type="submit" class="btn btn-primary">Hochladen</button>
+</form>
+{% endblock %}
+</body>
+</html>
