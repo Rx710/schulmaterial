@@ -10,6 +10,7 @@ from sqlalchemy.exc import OperationalError
 
 from config import Config
 from models import db, Rolle, Benutzer, Thema, Material, Version, Tag, Kommentar, Favorit
+from testdata import seed_test_data
 
 def create_app():
     app = Flask(__name__)
@@ -27,6 +28,7 @@ def create_app():
         for _ in range(10):
             try:
                 db.create_all()
+                seed_test_data()
                 break
             except OperationalError:
                 time.sleep(2)

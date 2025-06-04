@@ -24,3 +24,4 @@ Die Startseite ist nur nach erfolgreichem Login verfügbar. Melde dich daher zue
 
 Auf der Startseite kannst du Materialien nach Text durchsuchen oder über die Buttons nach Themen oder Tags filtern. Mit dem Stern neben einem Material lässt es sich zu deinen Favoriten hinzufügen. Alle gespeicherten Favoriten findest du über den Link "Favoriten" in der Navigation oder unter `/favoriten`.
 
+Beim ersten Start der Anwendung werden automatisch zwei Testnutzer erzeugt:
