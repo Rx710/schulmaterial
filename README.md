@@ -17,12 +17,3 @@ WEB_PORT=5001 docker-compose up
 ```
 
 So wird die Anwendung innerhalb des Containers weiterhin auf Port `5000` laufen, ist aber über den gewählten Host-Port erreichbar.
-
-## Login-Daten
-
-Beim Ausführen von `seed_data.py` werden zwei Benutzer angelegt:
-
-- Lehrkraft: `anna.lehrer@example.com` / Passwort `lehrerpass`
-- Auszubildender: `ben.auszug@example.com` / Passwort `azubipass`
-
-Rufe `/login` in der laufenden Anwendung auf, um dich mit einer dieser Rollen anzumelden.
