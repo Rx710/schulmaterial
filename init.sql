@@ -3,7 +3,6 @@ CREATE TABLE IF NOT EXISTS rolle (
   RollenID INT AUTO_INCREMENT PRIMARY KEY,
   Bezeichnung VARCHAR(50) NOT NULL
 );
-INSERT IGNORE INTO rolle (Bezeichnung) VALUES ('Lehrkraft'), ('Auszubildender');
 
 -- Thema-Tabelle und Beispielthemen
 CREATE TABLE IF NOT EXISTS thema (
@@ -11,10 +10,7 @@ CREATE TABLE IF NOT EXISTS thema (
   Bezeichnung VARCHAR(100) NOT NULL,
   Beschreibung TEXT
 );
-INSERT IGNORE INTO thema (Bezeichnung, Beschreibung) VALUES
-  ('Informatik', 'Themenbereich Informatik'),
-  ('Mathematik', 'Themenbereich Mathematik'),
-  ('Pflege', 'Themenbereich Pflege');
+
 
 -- Benutzer-Tabelle und Beispielbenutzer
 CREATE TABLE IF NOT EXISTS benutzer (
@@ -26,9 +22,6 @@ CREATE TABLE IF NOT EXISTS benutzer (
   RollenID INT,
   FOREIGN KEY (RollenID) REFERENCES rolle(RollenID)
 );
-INSERT IGNORE INTO benutzer (Vorname, Nachname, EMail, PasswortHash, RollenID) VALUES
-  ('Max', 'Mustermann', 'max@example.com', '', 1),
-  ('Erika', 'Musterfrau', 'erika@example.com', '', 2);
 
 -- Material-Tabelle
 CREATE TABLE IF NOT EXISTS material (
