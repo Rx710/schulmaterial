@@ -28,7 +28,7 @@ def create_app():
         for _ in range(10):
             try:
                 db.create_all()
-                seed_test_data()
+                seed_test_data() # Testdaten inserten
                 break
             except OperationalError:
                 time.sleep(2)

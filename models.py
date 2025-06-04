@@ -77,8 +77,6 @@ class Kommentar(db.Model):
     MaterialID = db.Column(db.Integer, db.ForeignKey('material.MaterialID'))
     AutorID = db.Column(db.Integer, db.ForeignKey('benutzer.BenutzerID'))
     Erstelldatum = db.Column(db.DateTime, default=datetime.utcnow)
-    # Datenbankspalte hat einen Umlaut im Namen. Damit SQLAlchemy korrekt auf
-    # "LetzteÄnderung" zugreift, geben wir explizit den Spaltennamen an.
     LetzteAenderung = db.Column(
         'LetzteÄnderung',
         db.DateTime,
@@ -92,8 +90,6 @@ class Favorit(db.Model):
     FavoritID = db.Column(db.Integer, primary_key=True)
     BenutzerID = db.Column(db.Integer, db.ForeignKey('benutzer.BenutzerID'))
     MaterialID = db.Column(db.Integer, db.ForeignKey('material.MaterialID'))
-    # Auch hier nutzt die Datenbank einen Spaltennamen mit Umlaut. Damit die
-    # Zuordnung funktioniert, wird der exakte Spaltenname angegeben.
     HinzugefuegtDatum = db.Column(
         'HinzugefügtDatum',
         db.DateTime,
