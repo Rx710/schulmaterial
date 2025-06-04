@@ -77,7 +77,14 @@ class Kommentar(db.Model):
     MaterialID = db.Column(db.Integer, db.ForeignKey('material.MaterialID'))
     AutorID = db.Column(db.Integer, db.ForeignKey('benutzer.BenutzerID'))
     Erstelldatum = db.Column(db.DateTime, default=datetime.utcnow)
-    LetzteAenderung = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    # Datenbankspalte hat einen Umlaut im Namen. Damit SQLAlchemy korrekt auf
+    # "LetzteÄnderung" zugreift, geben wir explizit den Spaltennamen an.
+    LetzteAenderung = db.Column(
+        'LetzteÄnderung',
+        db.DateTime,
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow,
+    )
     Kommentartext = db.Column(db.Text, nullable=False)
 
 class Favorit(db.Model):
@@ -85,4 +92,10 @@ class Favorit(db.Model):
     FavoritID = db.Column(db.Integer, primary_key=True)
     BenutzerID = db.Column(db.Integer, db.ForeignKey('benutzer.BenutzerID'))
     MaterialID = db.Column(db.Integer, db.ForeignKey('material.MaterialID'))
-    HinzugefuegtDatum = db.Column(db.DateTime, default=datetime.utcnow)
+    # Auch hier nutzt die Datenbank einen Spaltennamen mit Umlaut. Damit die
+    # Zuordnung funktioniert, wird der exakte Spaltenname angegeben.
+    HinzugefuegtDatum = db.Column(
+        'HinzugefügtDatum',
+        db.DateTime,
+        default=datetime.utcnow,
+    )
