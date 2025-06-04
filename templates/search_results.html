@@ -1,24 +1,26 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
 {% if materials %}
   <ul class="list-group">
     {% for m in materials %}
-      <li class="list-group-item d-flex justify-content-between align-items-center">
-        <div>
-          <a href="{{ url_for('material_detail', material_id=m.MaterialID) }}">{{ m.Dateiname }}</a>
-          <small class="text-muted">({{ m.Dateityp }})</small><br>
-          <small>Thema: {{ m.thema.Bezeichnung }}, Autor: {{ m.autor.Vorname }} {{ m.autor.Nachname }}</small>
-        </div>
-      </li>
+    <li class="list-group-item d-flex justify-content-between align-items-center">
+      <div>
+        <a href="{{ url_for('material_detail', material_id=m.MaterialID) }}">{{ m.Dateiname }}</a>
+        <small class="text-muted">({{ m.Dateityp }})</small><br>
+        <small>Thema: {{ m.thema.Bezeichnung }}, Autor: {{ m.autor.Vorname }} {{ m.autor.Nachname }}</small>
+      </div>
+      {% if session.user_id %}
+      <form method="post" action="{{ url_for('toggle_favorite', material_id=m.MaterialID) }}">
+        <button type="submit" class="btn btn-link p-0">
+          {% if m.MaterialID in favorit_ids %}
+          <i class="bi bi-star-fill text-warning"></i>
+          {% else %}
+          <i class="bi bi-star"></i>
+          {% endif %}
+        </button>
+      </form>
+      {% endif %}
+    </li>
     {% endfor %}
   </ul>
 {% else %}
   <p class="text-muted">Keine Materialien gefunden.</p>
 {% endif %}
-</body>
-</html>

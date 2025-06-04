@@ -1,5 +1,6 @@
 from app import create_app
 from models import db, Rolle, Benutzer, Thema, Material, Tag, Kommentar, Favorit
+from werkzeug.security import generate_password_hash
 
 app = create_app()
 with app.app_context():
@@ -10,8 +11,20 @@ with app.app_context():
     db.session.commit()
 
     # Benutzer anlegen
-    user1 = Benutzer(Vorname='Anna', Nachname='Lehrer', EMail='anna.lehrer@example.com', PasswortHash='', RollenID=lehrkraft.RollenID)
-    user2 = Benutzer(Vorname='Ben', Nachname='Auszubildender', EMail='ben.auszug@example.com', PasswortHash='', RollenID=auszubildender.RollenID)
+    user1 = Benutzer(
+        Vorname='Anna',
+        Nachname='Lehrer',
+        EMail='anna.lehrer@example.com',
+        PasswortHash=generate_password_hash('lehrerpass'),
+        RollenID=lehrkraft.RollenID,
+    )
+    user2 = Benutzer(
+        Vorname='Ben',
+        Nachname='Auszubildender',
+        EMail='ben.auszug@example.com',
+        PasswortHash=generate_password_hash('azubipass'),
+        RollenID=auszubildender.RollenID,
+    )
     db.session.add_all([user1, user2])
     db.session.commit()
 
