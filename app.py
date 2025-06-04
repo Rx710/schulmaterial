@@ -1,7 +1,8 @@
 import os
 import time
-from flask import Flask, render_template, request, redirect, url_for, send_file, flash
+from flask import Flask, render_template, request, redirect, url_for, send_file, flash, session
 from werkzeug.utils import secure_filename
+from werkzeug.security import check_password_hash
 from io import BytesIO
 from datetime import datetime
 from sqlalchemy import or_
@@ -36,6 +37,28 @@ def create_app():
     def index():
         # Für die Live-Suche brauchen wir nur die Suchleiste (Themen/Benutzer für Dropdown werden bei Upload benötigt)
         return render_template('index.html')
+
+    @app.route('/login', methods=['GET', 'POST'])
+    def login():
+        if request.method == 'POST':
+            email = request.form.get('email', '').strip()
+            password = request.form.get('password', '')
+            benutzer = Benutzer.query.filter_by(EMail=email).first()
+            if benutzer and check_password_hash(benutzer.PasswortHash or '', password):
+                session['user_id'] = benutzer.BenutzerID
+                session['role'] = benutzer.rolle.Bezeichnung
+                session['user_name'] = f"{benutzer.Vorname} {benutzer.Nachname}"
+                flash('Erfolgreich eingeloggt.', 'success')
+                return redirect(url_for('index'))
+            else:
+                flash('Ungültige Anmeldedaten.', 'danger')
+        return render_template('login.html')
+
+    @app.route('/logout')
+    def logout():
+        session.clear()
+        flash('Erfolgreich ausgeloggt.', 'success')
+        return redirect(url_for('index'))
 
     @app.route('/search-materials')
     def search_materials():
@@ -79,10 +102,14 @@ def create_app():
 
     @app.route('/upload', methods=['GET', 'POST'])
     def upload_material():
+        if session.get('role') != 'Lehrkraft':
+            flash('Nur Lehrkr\xc3\xa4fte k\xc3\xb6nnen Material hochladen.', 'danger')
+            return redirect(url_for('index'))
+
         if request.method == 'POST':
             # Datei und Metadaten aus dem Formular auslesen
             datei = request.files.get('datei')
-            autor_id = request.form.get('autor_id')
+            autor_id = session.get('user_id')
             thema_id = request.form.get('thema_id')
             tags_raw = request.form.get('tags', '')
 
@@ -137,10 +164,9 @@ def create_app():
             flash('Material erfolgreich hochgeladen.', 'success')
             return redirect(url_for('material_detail', material_id=neuer_material.MaterialID))
         else:
-            # GET: Formular anzeigen, dafür benötigen wir alle Themen und Benutzer
+            # GET: Formular anzeigen, dafür benötigen wir alle Themen
             themen = Thema.query.all()
-            benutzer = Benutzer.query.all()
-            return render_template('upload.html', themen=themen, benutzer=benutzer)
+            return render_template('upload.html', themen=themen)
 
     @app.route('/download/<int:material_id>')
     def download_material(material_id):
@@ -157,7 +183,7 @@ def create_app():
     @app.route('/add-comment/<int:material_id>', methods=['POST'])
     def add_comment(material_id):
         material = Material.query.get_or_404(material_id)
-        autor_id = request.form.get('autor_id')
+        autor_id = session.get('user_id') or request.form.get('autor_id')
         text = request.form.get('kommentartext').strip()
 
         if not text:

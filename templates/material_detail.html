@@ -38,17 +38,22 @@
       <p class="text-muted">Bisher keine Kommentare.</p>
     {% endif %}
 
-    <h4>Neuen Kommentar hinzufügen</h4>
-    <form method="post" action="{{ url_for('add_comment', material_id=material.MaterialID) }}">
-      <div class="mb-3">
-        <label for="autor_id" class="form-label">Autor</label>
-        <select class="form-select" id="autor_id" name="autor_id" required>
-          <option value="" disabled selected>Wähle einen Autor</option>
-          {% for b in benutzer %}
-            <option value="{{ b.BenutzerID }}">{{ b.Vorname }} {{ b.Nachname }}</option>
-          {% endfor %}
-        </select>
-      </div>
+  <h4>Neuen Kommentar hinzufügen</h4>
+  <form method="post" action="{{ url_for('add_comment', material_id=material.MaterialID) }}">
+    {% if session.user_id %}
+      <input type="hidden" id="autor_id" name="autor_id" value="{{ session.user_id }}">
+      <p><strong>Autor:</strong> {{ session.user_name }}</p>
+    {% else %}
+    <div class="mb-3">
+      <label for="autor_id" class="form-label">Autor</label>
+      <select class="form-select" id="autor_id" name="autor_id" required>
+        <option value="" disabled selected>Wähle einen Autor</option>
+        {% for b in benutzer %}
+          <option value="{{ b.BenutzerID }}">{{ b.Vorname }} {{ b.Nachname }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    {% endif %}
       <div class="mb-3">
         <label for="kommentartext" class="form-label">Kommentartext</label>
         <textarea class="form-control" id="kommentartext" name="kommentartext" rows="3" required></textarea>

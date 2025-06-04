@@ -13,6 +13,10 @@
     <label for="datei" class="form-label">Datei auswählen</label>
     <input class="form-control" type="file" id="datei" name="datei" required>
   </div>
+  {% if session.user_id %}
+    <input type="hidden" id="autor_id" name="autor_id" value="{{ session.user_id }}">
+    <p><strong>Autor:</strong> {{ session.user_name }}</p>
+  {% else %}
   <div class="mb-3">
     <label for="autor_id" class="form-label">Autor</label>
     <select class="form-select" id="autor_id" name="autor_id" required>
@@ -22,6 +26,7 @@
       {% endfor %}
     </select>
   </div>
+  {% endif %}
   <div class="mb-3">
     <label for="thema_id" class="form-label">Themengebiet</label>
     <select class="form-select" id="thema_id" name="thema_id" required>
