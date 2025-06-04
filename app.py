@@ -9,7 +9,7 @@ from sqlalchemy import or_
 from sqlalchemy.exc import OperationalError
 
 from config import Config
-from models import db, Rolle, Benutzer, Thema, Material, Version, Tag, Kommentar
+from models import db, Rolle, Benutzer, Thema, Material, Version, Tag, Kommentar, Favorit
 
 def create_app():
     app = Flask(__name__)
@@ -35,8 +35,11 @@ def create_app():
 
     @app.route('/')
     def index():
-        # Für die Live-Suche brauchen wir nur die Suchleiste (Themen/Benutzer für Dropdown werden bei Upload benötigt)
-        return render_template('index.html')
+        if not session.get('user_id'):
+            return redirect(url_for('login'))
+        themen = Thema.query.all()
+        tags = Tag.query.all()
+        return render_template('index.html', themen=themen, tags=tags)
 
     @app.route('/login', methods=['GET', 'POST'])
     def login():
@@ -63,27 +66,34 @@ def create_app():
     @app.route('/search-materials')
     def search_materials():
         query = request.args.get('query', '').strip()
-        if query:
-            # JOIN Material → Thema und → Tag, dann Filter auf Dateiname, Themen-Bezeichnung oder Tag-Bezeichnung
-            results = (
-                Material.query
-                .join(Thema)  # Material.ThemenID = Thema.ThemaID
-                .outerjoin(Material.tags)  # Material.tags → Tag (über material_tag-Zwischentabelle)
-                .filter(
-                    or_(
-                        Material.Dateiname.ilike(f'%{query}%'),
-                        Thema.Bezeichnung.ilike(f'%{query}%'),
-                        Tag.Bezeichnung.ilike(f'%{query}%')
-                    )
-                )
-                .distinct()
-                .all()
-            )
-        else:
-            results = []
+        tag_id = request.args.get('tag_id')
+        thema_id = request.args.get('thema_id')
 
-        # Gibt nur das Teilergebnis-Fragment zurück, nicht die gesamte Basis-Seite
-        return render_template('search_results.html', materials=results)
+        q = Material.query
+        if query:
+            q = (
+                q.join(Thema)
+                 .outerjoin(Material.tags)
+                 .filter(
+                     or_(
+                         Material.Dateiname.ilike(f'%{query}%'),
+                         Thema.Bezeichnung.ilike(f'%{query}%'),
+                         Tag.Bezeichnung.ilike(f'%{query}%')
+                     )
+                 )
+            )
+        if tag_id:
+            q = q.join(Material.tags).filter(Tag.TagID == int(tag_id))
+        if thema_id:
+            q = q.filter(Material.ThemenID == int(thema_id))
+
+        results = q.distinct().all() if (query or tag_id or thema_id) else []
+
+        fav_ids = []
+        if session.get('user_id'):
+            fav_ids = [f.MaterialID for f in Favorit.query.filter_by(BenutzerID=session['user_id']).all()]
+
+        return render_template('search_results.html', materials=results, favorit_ids=fav_ids)
 
     @app.route('/material/<int:material_id>')
     def material_detail(material_id):
@@ -93,11 +103,15 @@ def create_app():
             .order_by(Kommentar.Erstelldatum.desc()) \
             .all()
         benutzer = Benutzer.query.all()
+        fav_ids = []
+        if session.get('user_id'):
+            fav_ids = [f.MaterialID for f in Favorit.query.filter_by(BenutzerID=session['user_id']).all()]
         return render_template(
             'material_detail.html',
             material=material,
             kommentare=kommentare,
-            benutzer=benutzer
+            benutzer=benutzer,
+            favorit_ids=fav_ids
         )
 
     @app.route('/upload', methods=['GET', 'POST'])
@@ -201,6 +215,30 @@ def create_app():
         db.session.commit()
         flash('Kommentar hinzugefügt.', 'success')
         return redirect(url_for('material_detail', material_id=material_id))
+
+    @app.route('/toggle-favorite/<int:material_id>', methods=['POST'])
+    def toggle_favorite(material_id):
+        if not session.get('user_id'):
+            return redirect(url_for('login'))
+        fav = Favorit.query.filter_by(BenutzerID=session['user_id'], MaterialID=material_id).first()
+        if fav:
+            db.session.delete(fav)
+            db.session.commit()
+        else:
+            new_fav = Favorit(BenutzerID=session['user_id'], MaterialID=material_id)
+            db.session.add(new_fav)
+            db.session.commit()
+        return redirect(request.referrer or url_for('index'))
+
+    @app.route('/favoriten')
+    def favoriten():
+        if not session.get('user_id'):
+            return redirect(url_for('login'))
+        items = (Material.query
+                 .join(Favorit)
+                 .filter(Favorit.BenutzerID == session['user_id'])
+                 .all())
+        return render_template('favoriten.html', materials=items)
 
     return app
 

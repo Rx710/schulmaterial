@@ -1,29 +1,20 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-
-</head>
-<body>
 {% extends 'base.html' %}
 {% block content %}
-  <h1 class="mb-4">Suche nach Lernmaterialien</h1>
-  <div class="mb-3">
-    <input
-      type="text"
-      class="form-control"
-      id="query"
-      name="query"
-      placeholder="Suchbegriff eingeben..."
-      hx-get="{{ url_for('search_materials') }}"
-      hx-target="#results"
-      hx-trigger="keyup changed delay:500ms"
-    />
+<h1 class="mb-4">Suche nach Lernmaterialien</h1>
+<div class="mb-3">
+  <input type="text" class="form-control" id="query" name="query" placeholder="Suchbegriff eingeben..." hx-get="{{ url_for('search_materials') }}" hx-target="#results" hx-trigger="keyup changed delay:500ms">
+</div>
+<div class="mb-3">
+  <div class="btn-group me-2 mb-2" role="group">
+    {% for t in themen %}
+    <button class="btn btn-outline-primary" hx-get="{{ url_for('search_materials', thema_id=t.ThemaID) }}" hx-target="#results">{{ t.Bezeichnung }}</button>
+    {% endfor %}
   </div>
-  <div id="results">
-    <!-- Hier lädt HTMX die Suchergebnisse -->
+  <div class="btn-group mb-2" role="group">
+    {% for tag in tags %}
+    <button class="btn btn-outline-secondary" hx-get="{{ url_for('search_materials', tag_id=tag.TagID) }}" hx-target="#results">{{ tag.Bezeichnung }}</button>
+    {% endfor %}
   </div>
+</div>
+<div id="results"></div>
 {% endblock %}
-
-</body>
-</html>
