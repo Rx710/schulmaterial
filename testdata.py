@@ -1,3 +1,5 @@
+"""Beispieldaten für eine lokale Testumgebung."""
+
 from werkzeug.security import generate_password_hash
 from models import db, Rolle, Benutzer, Thema, Material, Tag, Kommentar, Favorit
 

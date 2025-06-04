@@ -1,9 +1,12 @@
+"""Datenbankmodelle der Lernmaterial-Verwaltung."""
+
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 
 db = SQLAlchemy()
 
 # Associationstabelle für n:m zwischen Material und Tag
+# Zwischentabelle für die n:m-Beziehung zwischen ``Material`` und ``Tag``
 table_material_tag = db.Table(
     'material_tag',
     db.Column('MaterialID', db.Integer, db.ForeignKey('material.MaterialID'), primary_key=True),
@@ -11,11 +14,13 @@ table_material_tag = db.Table(
 )
 
 class Rolle(db.Model):
+    """Benutzerrolle, z.B. Lehrkraft oder Auszubildender."""
     __tablename__ = 'rolle'
     RollenID = db.Column(db.Integer, primary_key=True)
     Bezeichnung = db.Column(db.String(50), nullable=False)
 
 class Benutzer(db.Model):
+    """Systembenutzer, der sich anmelden kann."""
     __tablename__ = 'benutzer'
     BenutzerID = db.Column(db.Integer, primary_key=True)
     Vorname = db.Column(db.String(100), nullable=False)
@@ -29,6 +34,7 @@ class Benutzer(db.Model):
     favoriten = db.relationship('Favorit', backref='benutzer', lazy=True)
 
 class Thema(db.Model):
+    """Fachliches Themengebiet für Materialien."""
     __tablename__ = 'thema'
     ThemaID = db.Column(db.Integer, primary_key=True)
     Bezeichnung = db.Column(db.String(100), nullable=False)
@@ -37,6 +43,7 @@ class Thema(db.Model):
     materialien = db.relationship('Material', backref='thema', lazy=True)
 
 class Material(db.Model):
+    """Repräsentiert ein Lernmaterial (Datei) mit Metadaten."""
     __tablename__ = 'material'
     MaterialID = db.Column(db.Integer, primary_key=True)
     Erstelldatum = db.Column(db.DateTime, default=datetime.utcnow)
@@ -56,6 +63,7 @@ class Material(db.Model):
     favoriten = db.relationship('Favorit', backref='material', lazy=True)
 
 class Version(db.Model):
+    """Version einer Datei, ermöglicht Historie."""
     __tablename__ = 'version'
     VersionID = db.Column(db.Integer, primary_key=True)
     MaterialID = db.Column(db.Integer, db.ForeignKey('material.MaterialID'))
@@ -67,11 +75,13 @@ class Version(db.Model):
     Dateipfad = db.Column(db.String(500))
 
 class Tag(db.Model):
+    """Schlagwort zur Kategorisierung von Materialien."""
     __tablename__ = 'tag'
     TagID = db.Column(db.Integer, primary_key=True)
     Bezeichnung = db.Column(db.String(100), unique=True, nullable=False)
 
 class Kommentar(db.Model):
+    """Benutzerkommentar zu einem Material."""
     __tablename__ = 'kommentar'
     KommentarID = db.Column(db.Integer, primary_key=True)
     MaterialID = db.Column(db.Integer, db.ForeignKey('material.MaterialID'))
@@ -86,6 +96,7 @@ class Kommentar(db.Model):
     Kommentartext = db.Column(db.Text, nullable=False)
 
 class Favorit(db.Model):
+    """Verknüpfung zwischen Benutzer und favorisiertem Material."""
     __tablename__ = 'favorit'
     FavoritID = db.Column(db.Integer, primary_key=True)
     BenutzerID = db.Column(db.Integer, db.ForeignKey('benutzer.BenutzerID'))
