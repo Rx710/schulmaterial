@@ -1,3 +1,5 @@
+"""Hilfsskript zum Einspielen der Testdaten."""
+
 from app import create_app
 from testdata import seed_test_data
 

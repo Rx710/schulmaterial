@@ -1,6 +1,23 @@
+"""Flask-Anwendung zur Verwaltung von Lernmaterialien.
+
+Dieses Modul enthält die Anwendungslogik sowie die Routen für die
+Benutzeroberfläche. Die Applikation wird über die Funktion
+``create_app`` erzeugt, sodass sie sowohl lokal als auch in Tests
+einsetzbar ist.
+"""
+
 import os
 import time
-from flask import Flask, render_template, request, redirect, url_for, send_file, flash, session
+from flask import (
+    Flask,
+    render_template,
+    request,
+    redirect,
+    url_for,
+    send_file,
+    flash,
+    session,
+)
 from werkzeug.utils import secure_filename
 from werkzeug.security import check_password_hash
 from io import BytesIO
@@ -13,6 +30,13 @@ from models import db, Rolle, Benutzer, Thema, Material, Version, Tag, Kommentar
 from testdata import seed_test_data
 
 def create_app():
+    """Application Factory.
+
+    Erstellt und konfiguriert die Flask-Anwendung. Beim Start wird
+    versucht, die Datenbanktabellen zu erzeugen und Testdaten zu laden.
+    Anschließend werden alle Routen registriert.
+    """
+
     app = Flask(__name__)
     app.config.from_object(Config)
     app.secret_key = 'supersecretkey'  # Für Flash-Messages (kann man später via Umgebungsvariable ersetzen)
@@ -23,7 +47,10 @@ def create_app():
     # Sicherstellen, dass Upload-Ordner existiert
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
-    # Beim Start mehrmals versuchen, die DB-Tabellen anzulegen (MySQL braucht manchmal etwas Zeit)
+    # Beim Start wird in einer Schleife versucht, die Datenbank zu
+    # initialisieren. Der MySQL-Container kann beim ersten Aufruf noch
+    # nicht bereit sein, daher wird mehrmals mit kurzen Pausen
+    # versucht ``create_all`` aufzurufen.
     with app.app_context():
         for _ in range(10):
             try:
@@ -37,6 +64,7 @@ def create_app():
 
     @app.route('/')
     def index():
+        """Startseite mit Suchoptionen anzeigen."""
         if not session.get('user_id'):
             return redirect(url_for('login'))
         themen = Thema.query.all()
@@ -45,6 +73,7 @@ def create_app():
 
     @app.route('/login', methods=['GET', 'POST'])
     def login():
+        """Einfache Login-Seite."""
         if request.method == 'POST':
             email = request.form.get('email', '').strip()
             password = request.form.get('password', '')
@@ -61,16 +90,19 @@ def create_app():
 
     @app.route('/logout')
     def logout():
+        """Beendet die Sitzung des aktuellen Benutzers."""
         session.clear()
         flash('Erfolgreich ausgeloggt.', 'success')
         return redirect(url_for('index'))
 
     @app.route('/search-materials')
     def search_materials():
+        """Sucht Materialien nach Text, Tag oder Thema."""
         query = request.args.get('query', '').strip()
         tag_id = request.args.get('tag_id')
         thema_id = request.args.get('thema_id')
 
+        # Basiskonfiguration der Abfrage
         q = Material.query
         if query:
             q = (
@@ -99,6 +131,7 @@ def create_app():
 
     @app.route('/material/<int:material_id>')
     def material_detail(material_id):
+        """Detailseite für ein einzelnes Material mit Kommentaren."""
         material = Material.query.get_or_404(material_id)
         kommentare = Kommentar.query \
             .filter_by(MaterialID=material_id) \
@@ -118,6 +151,7 @@ def create_app():
 
     @app.route('/upload', methods=['GET', 'POST'])
     def upload_material():
+        """Lässt Lehrkräfte neue Materialien hochladen."""
         if session.get('role') != 'Lehrkraft':
             flash('Nur Lehrkr\xc3\xa4fte k\xc3\xb6nnen Material hochladen.', 'danger')
             return redirect(url_for('index'))
@@ -186,6 +220,7 @@ def create_app():
 
     @app.route('/download/<int:material_id>')
     def download_material(material_id):
+        """Stellt eine Datei zum Download bereit."""
         material = Material.query.get_or_404(material_id)
         if material.SpeicherModus == 'BLOB':
             return send_file(
@@ -198,6 +233,7 @@ def create_app():
 
     @app.route('/add-comment/<int:material_id>', methods=['POST'])
     def add_comment(material_id):
+        """Speichert einen neuen Kommentar zum Material."""
         material = Material.query.get_or_404(material_id)
         autor_id = session.get('user_id') or request.form.get('autor_id')
         text = request.form.get('kommentartext').strip()
@@ -220,6 +256,7 @@ def create_app():
 
     @app.route('/toggle-favorite/<int:material_id>', methods=['POST'])
     def toggle_favorite(material_id):
+        """Fügt ein Material den Favoriten hinzu oder entfernt es."""
         if not session.get('user_id'):
             return redirect(url_for('login'))
         fav = Favorit.query.filter_by(BenutzerID=session['user_id'], MaterialID=material_id).first()
@@ -234,6 +271,7 @@ def create_app():
 
     @app.route('/favoriten')
     def favoriten():
+        """Zeigt alle Favoriten des aktuellen Benutzers."""
         if not session.get('user_id'):
             return redirect(url_for('login'))
         items = (Material.query
